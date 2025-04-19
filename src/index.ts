@@ -1,12 +1,11 @@
 #!/usr/bin/env node
 
-// ** REMOVED ** Stdio transport import
-// import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+// ** VERIFY THIS IMPORT PATH AFTER UPDATING SDK to v1.10.1 **
+// Check node_modules/@modelcontextprotocol/sdk/server/* for the correct file/path
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+// ** END VERIFICATION NEEDED **
 
-// ** ADDED ** Imports for Express and HTTP transport
 import express from 'express';
-import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'; // Verify this path from SDK source if needed
-
 // Original imports remain the same
 import { NEON_HANDLERS, NEON_TOOLS, ToolHandler } from './tools.js';
 import { NEON_RESOURCES } from './resources.js';
@@ -41,7 +40,6 @@ if (command === 'init') {
 // "start" command from here
 // ----------------------------
 
-// Ensure API key is provided for the 'start' command
 if (!neonApiKey) {
   console.error(
     'Error: Neon API key is required for the "start" command. Provide it via --neon-api-key or NEON_API_KEY environment variable.',
@@ -97,57 +95,38 @@ NEON_RESOURCES.forEach((resource) => {
   );
 });
 
-// --- ** MODIFIED ** Server Startup using Express and Streamable HTTP Transport ---
-
-// Create an Express application
+// --- Server Startup using Express and Streamable HTTP Transport ---
 const app = express();
-
-// Middleware to parse JSON bodies (important for POST requests)
 app.use(express.json());
-
-// Define the port using environment variable (for Render) or default
 const port = parseInt(process.env.PORT || '3000', 10);
-// Define the host required by Render
 const host = '0.0.0.0';
 
-// Handle all MCP requests (GET, POST, DELETE) at a single endpoint (e.g., /mcp)
-// You can change '/mcp' if desired, but keep it consistent.
 app.all('/mcp', async (req, res) => {
   console.log(`Received MCP request: ${req.method} ${req.path}`);
   try {
-    // Instantiate the transport for each request (stateless approach from example)
-    // It uses the incoming request (req) and response (res) objects.
-    // Setting sessionIdGenerator to undefined makes it stateless per request.
+    // ** VERIFY **: Ensure constructor and options are correct for v1.10.1
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
       req,
       res,
     });
-
-    // Connect the main McpServer instance to this request-specific transport
     await server.connect(transport);
-
-    // Let the transport handle the incoming request based on MCP specification
     await transport.handleRequest(req, res);
-
     console.log(`Finished handling MCP request: ${req.method} ${req.path}`);
   } catch (error) {
     console.error('Error handling MCP request:', error);
-    // Avoid sending response if headers already sent (e.g., by transport error handling)
     if (!res.headersSent) {
       res.status(500).json({ error: 'Internal Server Error' });
     }
   }
 });
 
-// Add a simple root endpoint for health checks or basic info
 app.get('/', (req, res) => {
   res.status(200).send(
     `MCP Server Neon v${packageJson.version} is running. MCP endpoint is at /mcp`,
   );
 });
 
-// Start the Express server
 app
   .listen(port, host, () => {
     console.log(
@@ -159,13 +138,3 @@ app
     console.error('Failed to start Express server:', error);
     process.exit(1);
   });
-
-// --- ** REMOVED ** Old stdio main function ---
-// async function main() {
-//   const transport = new StdioServerTransport();
-//   await server.connect(transport);
-// }
-// main().catch((error: unknown) => {
-//   console.error('Server error:', error);
-//   process.exit(1);
-// });
