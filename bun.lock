@@ -4,7 +4,7 @@
     "": {
       "name": "@neondatabase/mcp-server-neon",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "1.6.0",
+        "@modelcontextprotocol/sdk": "1.10.1",
         "@neondatabase/api-client": "2.0.0",
         "@neondatabase/serverless": "0.10.4",
         "chalk": "5.3.0",
