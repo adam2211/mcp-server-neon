@@ -2,7 +2,8 @@
 
 // ** VERIFY THIS IMPORT PATH AFTER UPDATING SDK to v1.10.1 **
 // Check node_modules/@modelcontextprotocol/sdk/server/* for the correct file/path
-import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+// Update this line if it's different:
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/dist/esm/server/streamableHttp.js';
 // ** END VERIFICATION NEEDED **
 
 import express from 'express';
