@@ -58,6 +58,7 @@ export const neonClient = createApiClient({
 const server = new McpServer(
   {
     name: 'mcp-server-neon',
+    // Use version from updated package.json if desired, or keep original logic
     version: packageJson.version,
   },
   {
@@ -106,12 +107,15 @@ app.all('/mcp', async (req, res) => {
   try {
     // ** VERIFY **: Ensure constructor and options are correct for v1.10.1
     const transport = new StreamableHTTPServerTransport({
-      sessionIdGenerator: undefined,
+      sessionIdGenerator: undefined, // For stateless operation per request
       req,
       res,
     });
+    // Connect the main McpServer instance to this request-specific transport
     await server.connect(transport);
+    // Let the transport handle the incoming request based on MCP specification
     await transport.handleRequest(req, res);
+
     console.log(`Finished handling MCP request: ${req.method} ${req.path}`);
   } catch (error) {
     console.error('Error handling MCP request:', error);
@@ -127,6 +131,7 @@ app.get('/', (req, res) => {
   );
 });
 
+// Start the Express server and listen
 app
   .listen(port, host, () => {
     console.log(
